@@ -47,7 +47,7 @@ Gate1(중복/품질 필터) + Gate2(생성+평가 2단계 LLM, Groq) 파이프�
 `/ingest/*` → `/process/gate2` → `/feed` 흐름 실제 검증됨.
 `ENABLE_SCHEDULER=true`로 매일 자동 수집(APScheduler, 같은 프로세스 내)도 켤 수
 있음 — 자세한 설계는 [`docs/decisions/0003-scheduling.md`](docs/decisions/0003-scheduling.md).
-프론트엔드는 아직 없음.
+프론트엔드는 빌드 없는 정적 HTML(`GET /`)로 `/feed`를 그대로 보여줌.
 
 ### 로컬 실행
 

@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.db import Base, SessionLocal, engine
 from app.ingest import SOURCE_WIKIPEDIA_ONTHISDAY, ingest_raw_materials
+from app.models import GeneratedQuestion
+from app.process import process_pending_raw_materials
 from app.sources.wikipedia_onthisday import fetch_onthisday_raw, parse_events
 
 app = FastAPI(title="curiosity-feed")
@@ -32,3 +34,20 @@ def ingest_wikipedia_onthisday(db: Session = Depends(get_db)):
     events = parse_events(raw)
     ingested = ingest_raw_materials(db, SOURCE_WIKIPEDIA_ONTHISDAY, events)
     return {"fetched": len(events), "ingested": ingested}
+
+
+@app.post("/process/gate2")
+def process_gate2(limit: int = 10, db: Session = Depends(get_db)):
+    created = process_pending_raw_materials(db, limit=limit)
+    return {"processed": len(created)}
+
+
+@app.get("/feed")
+def feed(limit: int = 20, db: Session = Depends(get_db)):
+    rows = (
+        db.query(GeneratedQuestion)
+        .order_by(GeneratedQuestion.score.desc())
+        .limit(limit)
+        .all()
+    )
+    return [{"question": r.question, "score": r.score, "reason": r.reason} for r in rows]

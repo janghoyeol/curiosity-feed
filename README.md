@@ -35,11 +35,21 @@
 
 | 소스 | 방식 | 비고 |
 |---|---|---|
-| 위키백과 DYK / On this day | 공식 REST API | 품질 안전판, 양은 제한적 |
-| 공공데이터포털 / KOSIS | 공식 API (키 발급) | 한국 특화 통계, 가공 난이도 높음 |
-| 네이버뉴스 검색 오픈API | 공식 API (키 발급) | 시사성 보완재, 제목+요약만 제공 |
+| 위키백과 On this day (영어판) | 공식 REST API | 연결 완료. 한국어판엔 DYK/onthisday 피드가 없어 영어판을 원재료로 쓰고 번역·질문화는 Gate2에서 처리 |
+| 공공데이터포털 - 소방청 연간화재통계 | 공식 Open API (키 발급) | 연결 완료. 개별 화재 사건 로우(3만여 건)를 집계해 "흥미로운 사실" 문장으로 변환 후 Gate2에 전달 |
+| 네이버뉴스 검색 오픈API | 공식 API (키 발급) | 아직 연결 안 함. 시사성 보완재 |
 | 나무위키 트리비아 | — | **자동 수집 안 함.** CC BY-NC-SA(비영리) + 유사서비스 금지 약관으로 소재 아이디어만 수동 참고 |
 
 ## 상태
 
-설계 초기 단계. 아직 기술 스택/아키텍처는 확정되지 않았음.
+Gate1(중복/품질 필터) + Gate2(생성+평가 2단계 LLM, Groq) 파이프라인 동작 확인.
+소스 2개(위키백과 On this day, 소방청 화재통계) 연결 완료, end-to-end로
+`/ingest/*` → `/process/gate2` → `/feed` 흐름 실제 검증됨. 프론트엔드는 아직 없음.
+
+### 로컬 실행
+
+```bash
+python -m venv .venv && .venv/bin/pip install -r requirements.txt
+cp .env.example .env  # GROQ_API_KEY, DATA_GO_KR_FIRE_SERVICE_KEY 채우기
+.venv/bin/uvicorn app.main:app --reload
+```

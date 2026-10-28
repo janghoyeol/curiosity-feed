@@ -1,12 +1,16 @@
 from datetime import datetime, timezone
 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
+load_dotenv()
+
 from app.db import Base, SessionLocal, engine
-from app.ingest import SOURCE_WIKIPEDIA_ONTHISDAY, ingest_raw_materials
+from app.ingest import SOURCE_FIRE_STATISTICS, SOURCE_WIKIPEDIA_ONTHISDAY, ingest_raw_materials
 from app.models import GeneratedQuestion
 from app.process import process_pending_raw_materials
+from app.sources.fire_statistics import compute_insights, fetch_all_fire_records
 from app.sources.wikipedia_onthisday import fetch_onthisday_raw, parse_events
 
 app = FastAPI(title="curiosity-feed")
@@ -34,6 +38,14 @@ def ingest_wikipedia_onthisday(db: Session = Depends(get_db)):
     events = parse_events(raw)
     ingested = ingest_raw_materials(db, SOURCE_WIKIPEDIA_ONTHISDAY, events)
     return {"fetched": len(events), "ingested": ingested}
+
+
+@app.post("/ingest/fire-statistics")
+def ingest_fire_statistics(db: Session = Depends(get_db)):
+    records = fetch_all_fire_records()
+    insights = compute_insights(records)
+    ingested = ingest_raw_materials(db, SOURCE_FIRE_STATISTICS, insights)
+    return {"fetched_records": len(records), "insights": len(insights), "ingested": ingested}
 
 
 @app.post("/process/gate2")

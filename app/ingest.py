@@ -4,6 +4,7 @@ from app.gate1 import passes_gate1
 from app.models import RawMaterial
 
 SOURCE_WIKIPEDIA_ONTHISDAY = "wikipedia_onthisday"
+SOURCE_FIRE_STATISTICS = "data_go_kr_fire_statistics"
 
 
 def ingest_raw_materials(session: Session, source: str, items: list[dict]) -> int:

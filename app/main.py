@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
@@ -22,6 +23,11 @@ from app.sources.wikipedia_onthisday import fetch_onthisday_raw, parse_events
 app = FastAPI(title="curiosity-feed")
 
 Base.metadata.create_all(bind=engine)
+
+if os.environ.get("ENABLE_SCHEDULER", "false").lower() == "true":
+    from app.scheduler import start_scheduler
+
+    start_scheduler()
 
 
 def get_db():

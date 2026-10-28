@@ -40,3 +40,26 @@ def test_process_pending_raw_materials_respects_limit(session):
     created = process_pending_raw_materials(session, limit=2, llm_call=fake_llm_call)
 
     assert len(created) == 2
+
+
+def test_process_pending_raw_materials_keeps_earlier_successes_when_later_item_fails(session):
+    ok = RawMaterial(source="wikipedia_onthisday", external_id="ok-1", text="성공할 원재료")
+    fails = RawMaterial(source="wikipedia_onthisday", external_id="fail-1", text="실패할 원재료")
+    session.add_all([ok, fails])
+    session.commit()
+
+    call_count = {"n": 0}
+
+    def flaky_llm_call(prompt, **kwargs):
+        call_count["n"] += 1
+        if call_count["n"] <= 2:
+            if "score" in prompt:
+                return '{"score": 4.0, "reason": "이유"}'
+            return "성공 질문"
+        raise RuntimeError("레이트리밋 등으로 실패")
+
+    created = process_pending_raw_materials(session, limit=10, llm_call=flaky_llm_call)
+
+    # 첫 번째 원재료는 성공해서 커밋됐어야 하고, 두 번째가 실패해도 예외가 올라오지 않아야 한다
+    assert len(created) == 1
+    assert session.query(GeneratedQuestion).count() == 1

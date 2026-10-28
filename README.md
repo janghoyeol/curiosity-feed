@@ -44,7 +44,10 @@
 
 Gate1(중복/품질 필터) + Gate2(생성+평가 2단계 LLM, Groq) 파이프라인 동작 확인.
 소스 3개(위키백과 On this day, 소방청 화재통계, 네이버뉴스) 연결 완료, end-to-end로
-`/ingest/*` → `/process/gate2` → `/feed` 흐름 실제 검증됨. 프론트엔드는 아직 없음.
+`/ingest/*` → `/process/gate2` → `/feed` 흐름 실제 검증됨.
+`ENABLE_SCHEDULER=true`로 매일 자동 수집(APScheduler, 같은 프로세스 내)도 켤 수
+있음 — 자세한 설계는 [`docs/decisions/0003-scheduling.md`](docs/decisions/0003-scheduling.md).
+프론트엔드는 아직 없음.
 
 ### 로컬 실행
 

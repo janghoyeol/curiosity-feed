@@ -40,6 +40,7 @@ def process_pending_raw_materials(
         generated = GeneratedQuestion(
             raw_material_id=material.id,
             question=scored.question,
+            answer=scored.answer,
             score=scored.score,
             reason=scored.reason,
         )

@@ -9,11 +9,13 @@ def test_process_pending_raw_materials_skips_already_processed(session):
     session.commit()
 
     session.add(
-        GeneratedQuestion(raw_material_id=already_done.id, question="기존 질문", score=3.0, reason="기존")
+        GeneratedQuestion(
+            raw_material_id=already_done.id, question="기존 질문", answer="기존 답", score=3.0, reason="기존"
+        )
     )
     session.commit()
 
-    responses = iter(["새로 생성된 질문", '{"score": 4.0, "reason": "사실형"}'])
+    responses = iter(['{"question": "새로 생성된 질문", "answer": "새로 생성된 답"}', '{"score": 4.0, "reason": "사실형"}'])
 
     def fake_llm_call(prompt, **kwargs):
         return next(responses)
@@ -23,6 +25,7 @@ def test_process_pending_raw_materials_skips_already_processed(session):
     assert len(created) == 1
     assert created[0].raw_material_id == pending.id
     assert created[0].question == "새로 생성된 질문"
+    assert created[0].answer == "새로 생성된 답"
     assert created[0].score == 4.0
     assert session.query(GeneratedQuestion).count() == 2
 
@@ -35,7 +38,7 @@ def test_process_pending_raw_materials_respects_limit(session):
     def fake_llm_call(prompt, **kwargs):
         if "score" in prompt:  # SCORING_PROMPT만 JSON 포맷 지시에 "score"를 포함함
             return '{"score": 3.0, "reason": "이유"}'
-        return "생성된 질문"
+        return '{"question": "생성된 질문", "answer": "생성된 답"}'
 
     created = process_pending_raw_materials(session, limit=2, llm_call=fake_llm_call)
 
@@ -55,7 +58,7 @@ def test_process_pending_raw_materials_keeps_earlier_successes_when_later_item_f
         if call_count["n"] <= 2:
             if "score" in prompt:
                 return '{"score": 4.0, "reason": "이유"}'
-            return "성공 질문"
+            return '{"question": "성공 질문", "answer": "성공 답"}'
         raise RuntimeError("레이트리밋 등으로 실패")
 
     created = process_pending_raw_materials(session, limit=10, llm_call=flaky_llm_call)

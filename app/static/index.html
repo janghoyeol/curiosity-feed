@@ -59,6 +59,7 @@
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 12px;
+    cursor: pointer;
   }
   .card .question {
     font-size: 1.05rem;
@@ -66,10 +67,31 @@
     margin: 0 0 8px;
     line-height: 1.4;
   }
-  .card .reason {
-    font-size: 0.85rem;
+  .card .reveal-hint {
+    font-size: 0.8rem;
     color: var(--muted);
     margin: 0;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card .answer {
+    font-size: 0.95rem;
+    margin: 8px 0 0;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+    line-height: 1.5;
+    display: none;
+  }
+  .card.revealed .answer {
+    display: block;
+  }
+  .card.revealed .reveal-hint {
+    display: none;
+  }
+  .card .reason {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 8px 0 0;
   }
   .score {
     display: inline-block;
@@ -130,11 +152,17 @@
           <div class="card">
             <span class="score ${scoreClass(item.score)}">${item.score.toFixed(1)}</span>
             <p class="question">${escapeHtml(item.question)}</p>
+            <p class="reveal-hint">👉 답 보기</p>
+            <p class="answer">${escapeHtml(item.answer)}</p>
             <p class="reason">${escapeHtml(item.reason)}</p>
           </div>
         `
           )
           .join("");
+
+        container.querySelectorAll(".card").forEach((card) => {
+          card.addEventListener("click", () => card.classList.toggle("revealed"));
+        });
       } catch (err) {
         container.innerHTML = '<div class="error">불러오지 못했어요: ' + escapeHtml(err.message) + "</div>";
       }

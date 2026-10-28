@@ -23,6 +23,7 @@ class GeneratedQuestion(Base):
     id = Column(Integer, primary_key=True)
     raw_material_id = Column(Integer, ForeignKey("raw_materials.id"), nullable=False)
     question = Column(String, nullable=False)
+    answer = Column(String, nullable=False)
     score = Column(Float, nullable=False)
     reason = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)

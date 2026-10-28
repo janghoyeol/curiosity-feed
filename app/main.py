@@ -90,4 +90,6 @@ def feed(limit: int = 20, db: Session = Depends(get_db)):
         .limit(limit)
         .all()
     )
-    return [{"question": r.question, "score": r.score, "reason": r.reason} for r in rows]
+    return [
+        {"question": r.question, "answer": r.answer, "score": r.score, "reason": r.reason} for r in rows
+    ]

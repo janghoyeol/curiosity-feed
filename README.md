@@ -53,6 +53,11 @@ Gate1(중복/품질 필터) + Gate2(생성+평가 2단계 LLM, Groq) 파이프�
 
 ```bash
 python -m venv .venv && .venv/bin/pip install -r requirements.txt
-cp .env.example .env  # GROQ_API_KEY, DATA_GO_KR_FIRE_SERVICE_KEY 채우기
+cp .env.example .env  # GROQ_API_KEY, DATA_GO_KR_FIRE_SERVICE_KEY 등 채우기
 .venv/bin/uvicorn app.main:app --reload
 ```
+
+### 배포
+
+Fly.io에 Docker로 배포. 절차와 선택 이유는
+[`docs/decisions/0004-deployment.md`](docs/decisions/0004-deployment.md) 참고.

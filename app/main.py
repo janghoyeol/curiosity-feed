@@ -7,10 +7,16 @@ from sqlalchemy.orm import Session
 load_dotenv()
 
 from app.db import Base, SessionLocal, engine
-from app.ingest import SOURCE_FIRE_STATISTICS, SOURCE_WIKIPEDIA_ONTHISDAY, ingest_raw_materials
+from app.ingest import (
+    SOURCE_FIRE_STATISTICS,
+    SOURCE_NAVER_NEWS,
+    SOURCE_WIKIPEDIA_ONTHISDAY,
+    ingest_raw_materials,
+)
 from app.models import GeneratedQuestion
 from app.process import process_pending_raw_materials
 from app.sources.fire_statistics import compute_insights, fetch_all_fire_records
+from app.sources.naver_news import fetch_and_parse as fetch_naver_news
 from app.sources.wikipedia_onthisday import fetch_onthisday_raw, parse_events
 
 app = FastAPI(title="curiosity-feed")
@@ -46,6 +52,13 @@ def ingest_fire_statistics(db: Session = Depends(get_db)):
     insights = compute_insights(records)
     ingested = ingest_raw_materials(db, SOURCE_FIRE_STATISTICS, insights)
     return {"fetched_records": len(records), "insights": len(insights), "ingested": ingested}
+
+
+@app.post("/ingest/naver-news")
+def ingest_naver_news(db: Session = Depends(get_db)):
+    items = fetch_naver_news()
+    ingested = ingest_raw_materials(db, SOURCE_NAVER_NEWS, items)
+    return {"fetched": len(items), "ingested": ingested}
 
 
 @app.post("/process/gate2")

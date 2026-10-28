@@ -28,3 +28,16 @@ def test_ingest_raw_materials_skips_duplicates_and_too_short(session):
 
     assert count == 1
     assert session.query(RawMaterial).filter_by(external_id="new").count() == 1
+
+
+def test_ingest_raw_materials_dedupes_within_same_batch(session):
+    # 네이버뉴스처럼 여러 검색어로 수집하면 같은 기사가 한 배치 안에서 두 번 걸릴 수 있다
+    items = [
+        {"external_id": "same-link", "text": "같은 기사가 두 검색어에 다 걸림"},
+        {"external_id": "same-link", "text": "같은 기사가 두 검색어에 다 걸림"},
+    ]
+
+    count = ingest_raw_materials(session, "naver_news", items)
+
+    assert count == 1
+    assert session.query(RawMaterial).filter_by(external_id="same-link").count() == 1

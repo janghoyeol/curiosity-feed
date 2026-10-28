@@ -1,9 +1,13 @@
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+
+STATIC_DIR = Path(__file__).parent / "static"
 
 load_dotenv()
 
@@ -41,6 +45,11 @@ def get_db():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/")
+def index():
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.post("/ingest/wikipedia-onthisday")

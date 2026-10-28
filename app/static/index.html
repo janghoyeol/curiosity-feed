@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>curiosity-feed</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --border: #e5e5e5;
+    --high: #2f7a3d;
+    --mid: #a6760f;
+    --low: #9a9a9a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15151a;
+      --card-bg: #1f1f26;
+      --text: #ededed;
+      --muted: #a0a0a8;
+      --border: #333340;
+      --high: #5fbf74;
+      --mid: #e0b24a;
+      --low: #7a7a82;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Pretendard", "Apple SD Gothic Neo", sans-serif;
+  }
+  header {
+    padding: 24px 16px 12px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  header h1 {
+    font-size: 1.4rem;
+    margin: 0 0 4px;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 8px 16px 40px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card .question {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+    line-height: 1.4;
+  }
+  .card .reason {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0;
+  }
+  .score {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .score.high { color: var(--high); background: color-mix(in srgb, var(--high) 15%, transparent); }
+  .score.mid { color: var(--mid); background: color-mix(in srgb, var(--mid) 15%, transparent); }
+  .score.low { color: var(--low); background: color-mix(in srgb, var(--low) 15%, transparent); }
+  .empty, .error {
+    color: var(--muted);
+    text-align: center;
+    padding: 40px 16px;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>curiosity-feed</h1>
+    <p>평소엔 궁금하지 않았지만, 보는 순간 궁금해지는 것들</p>
+  </header>
+  <main id="feed">
+    <div class="empty">불러오는 중...</div>
+  </main>
+
+  <script>
+    function scoreClass(score) {
+      if (score >= 4) return "high";
+      if (score >= 2.5) return "mid";
+      return "low";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function loadFeed() {
+      const container = document.getElementById("feed");
+      try {
+        const res = await fetch("/feed?limit=50");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const items = await res.json();
+
+        if (!items.length) {
+          container.innerHTML = '<div class="empty">아직 생성된 질문이 없어요.</div>';
+          return;
+        }
+
+        container.innerHTML = items
+          .map(
+            (item) => `
+          <div class="card">
+            <span class="score ${scoreClass(item.score)}">${item.score.toFixed(1)}</span>
+            <p class="question">${escapeHtml(item.question)}</p>
+            <p class="reason">${escapeHtml(item.reason)}</p>
+          </div>
+        `
+          )
+          .join("");
+      } catch (err) {
+        container.innerHTML = '<div class="error">불러오지 못했어요: ' + escapeHtml(err.message) + "</div>";
+      }
+    }
+
+    loadFeed();
+  </script>
+</body>
+</html>
